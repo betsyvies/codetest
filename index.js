@@ -1,4 +1,5 @@
 const http = require('http');
+const cron = require('node-cron');
 
 let ipAddressReqs = new Map();
 let ipAddressReqsTop100 = new Map();
@@ -37,8 +38,16 @@ const top100 = (ipAddress, accIpAddress) => {
   return new Map([...Array.from(newIpAddressReqsTop100).sort(([, a], [, b]) => b - a)])
 };
 
+const clear = (top100) => {
+  ipAddressReqs.clear();
+  top100.clear();
+};
+
 const requestListener = function (req, res) {
   res.writeHead(200);
+  cron.schedule('0 0 * * *', () => {
+    clear(ipAddressReqsTop100);
+  });
   ipAddressReqsTop100 = new Map([...requestHandled(parseIp(req))]);
   console.log(ipAddressReqsTop100.size)
 
